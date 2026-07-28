@@ -6,3 +6,8 @@ dreamdex-logs*.txt
 история сайта.txt
 _snapshot_base.json
 STOPPED
+STOPPED-mm
+backups/
+cost-snapshots.json
+HANDOFF.md
+правила.txt

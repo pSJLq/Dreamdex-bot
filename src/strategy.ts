@@ -81,9 +81,11 @@ export class VolumeBooster implements Strategy {
     const spreadBps = c.ob.mid > 0 ? (c.ob.ask - c.ob.bid) / c.ob.mid * 1e4 : 1e9;
     if (this.maxSpreadBps > 0 && spreadBps > this.maxSpreadBps) return out;        // спред дорогой → НЕ кроссим сейчас (ждём узкий → цена ниже)
     const half = c.clipUSDso * 0.5;                                                // целевой порог активации — полклипа…
-    // …но НЕ выше абсолютного минимума $12: порог «строго полклипа» замораживал хвосты капитала
-    // (2 июля: inv $28 < half $30 «нельзя продать» + buyable ~$29 < $30 «нельзя купить» = часы простоя).
-    const actMin = Math.min(half, 12);
+    // …но НЕ выше абсолютного минимума $7: порог «строго полклипа» замораживал хвосты капитала
+    // (2 июля: inv $28 < half $30 «нельзя продать» + buyable ~$29 < $30 «нельзя купить» = часы простоя;
+    //  5 июля: minQuoteUSDso придавил buyable к $11.94 < 12 → 11ч клина). $7 = минимум над биржевым
+    //  minQuantity WBTC (~$6.2) → мёртвая зона отодвинута к ~$14 USDso, дальше ордера всё ещё валидны.
+    const actMin = Math.min(half, 7);
     const sizeFor = (availUSD: number) => Math.min(c.clipUSDso, availUSD * 0.95) / c.ob.mid; // размер под доступное (запас 5%)
     if (c.quoteUSDso >= actMin) out.push({ symbol: c.symbol, side: "buy",  price: c.ob.ask, size: sizeFor(c.quoteUSDso), postOnly: false, tag: this.name }); // есть USDso → берём аск
     if (c.invUSDso  >= actMin) out.push({ symbol: c.symbol, side: "sell", price: c.ob.bid, size: sizeFor(c.invUSDso),   postOnly: false, tag: this.name }); // есть база → бьём бид
